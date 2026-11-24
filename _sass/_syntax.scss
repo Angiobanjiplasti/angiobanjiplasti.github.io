@@ -1,0 +1,37 @@
+// Rouge token colours — tuned for the dark terminal palette.
+// Override these in the [data-theme="light"] block if you want a light variant.
+.highlight { color: var(--text); }
+.highlight .c,  .highlight .c1, .highlight .cm, .highlight .ch, .highlight .cs { color: #5f7383; font-style: italic; }
+.highlight .cp, .highlight .cpf { color: #7c92a3; }
+.highlight .k,  .highlight .kd, .highlight .kn, .highlight .kp, .highlight .kr, .highlight .kt { color: #d997e8; }
+.highlight .o,  .highlight .ow { color: #9fb3c2; }
+.highlight .p { color: #8fa3b0; }
+.highlight .n,  .highlight .nx { color: var(--text); }
+.highlight .nb, .highlight .bp { color: #7fe3c4; }
+.highlight .nc, .highlight .nn, .highlight .nd { color: #f2c97d; }
+.highlight .nf, .highlight .fm { color: #82b9ff; }
+.highlight .na, .highlight .py, .highlight .nt { color: #ff9d8a; }
+.highlight .nv, .highlight .vc, .highlight .vg, .highlight .vi { color: #d9e2e8; }
+.highlight .no, .highlight .ni, .highlight .ne { color: #f2b879; }
+.highlight .m,  .highlight .mf, .highlight .mh, .highlight .mi, .highlight .mo { color: #b5d98a; }
+.highlight .s,  .highlight .s1, .highlight .s2, .highlight .sb, .highlight .sc,
+.highlight .sd, .highlight .se, .highlight .sh, .highlight .si, .highlight .sx,
+.highlight .sr, .highlight .ss { color: #e6c07b; }
+.highlight .s2, .highlight .sx { color: #a6d9a0; }
+.highlight .gd { color: #ff8b82; background: rgba(255, 139, 130, 0.08); }
+.highlight .gi { color: #7fe3c4; background: rgba(127, 227, 196, 0.08); }
+.highlight .ge { font-style: italic; }
+.highlight .gs, .highlight .gh, .highlight .gu { font-weight: 700; }
+.highlight .gp { color: #7fe3c4; }
+.highlight .err { color: #ff8b82; }
+
+[data-theme="light"] .highlight .c,
+[data-theme="light"] .highlight .c1,
+[data-theme="light"] .highlight .cm { color: #6c7d85; }
+[data-theme="light"] .highlight .k,
+[data-theme="light"] .highlight .kd,
+[data-theme="light"] .highlight .kt { color: #8b3f9e; }
+[data-theme="light"] .highlight .s,
+[data-theme="light"] .highlight .s1,
+[data-theme="light"] .highlight .s2 { color: #8a5a12; }
+[data-theme="light"] .highlight .nf { color: #185fb0; }

@@ -1,0 +1,42 @@
+---
+layout: default
+---
+
+<section class="hero">
+  <p class="hero__line"><span class="prompt">~/ctf$</span> <span class="command">cat about.md</span></p>
+  <h1>Notes from the other side of the flag.</h1>
+  <p>{{ site.description }}</p>
+  <div class="hero__actions">
+    <a class="button button--primary" href="{{ '/events/' | relative_url }}">Browse events <span aria-hidden="true">-&gt;</span></a>
+    {% if site.appearance.search %}<a class="button" href="{{ '/search/' | relative_url }}">Search writeups</a>{% endif %}
+  </div>
+  <p class="hero__meta">{{ site.posts.size }} writeups &nbsp;/&nbsp; {{ site.events.size }} events</p>
+</section>
+
+<section class="latest">
+  <div class="section-heading">
+    <h2>Recent writeups</h2>
+    <a href="{{ '/feed.xml' | relative_url }}">RSS feed <span aria-hidden="true">↗</span></a>
+  </div>
+
+  {% assign posts = paginator.posts | default: site.posts | slice: 0, 10 %}
+  <div class="post-list">
+    {% for post in posts %}
+      {% include post-card.html post=post %}
+    {% else %}
+      <p class="empty">No writeups yet. Copy the sample in <code>_posts/</code> and start editing.</p>
+    {% endfor %}
+  </div>
+
+  {% if paginator.total_pages > 1 %}
+    <nav class="pager" aria-label="Pagination">
+      {% if paginator.previous_page %}
+        <a href="{{ paginator.previous_page_path | relative_url }}">&larr; Newer</a>
+      {% else %}<span class="pager__disabled">&larr; Newer</span>{% endif %}
+      <span class="pager__status">Page {{ paginator.page }} of {{ paginator.total_pages }}</span>
+      {% if paginator.next_page %}
+        <a href="{{ paginator.next_page_path | relative_url }}">Older &rarr;</a>
+      {% else %}<span class="pager__disabled">Older &rarr;</span>{% endif %}
+    </nav>
+  {% endif %}
+</section>

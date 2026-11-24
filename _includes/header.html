@@ -1,0 +1,20 @@
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="{{ '/' | relative_url }}">
+      <span class="brand__prompt" aria-hidden="true">~/ctf$</span>
+      <span class="brand__name">{{ site.title }}</span>
+    </a>
+
+    <nav class="site-nav" aria-label="Main">
+      {% for item in site.nav %}
+        {% assign href = item.url | relative_url %}
+        {% assign current = page.url | replace: 'index.html', '/' %}
+        <a href="{{ href }}"{% if current == item.url %} aria-current="page"{% endif %}>{{ item.title }}</a>
+      {% endfor %}
+    </nav>
+
+    <button class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false" title="Toggle colour theme">
+      <span class="theme-toggle__icon" aria-hidden="true"></span>
+    </button>
+  </div>
+</header>

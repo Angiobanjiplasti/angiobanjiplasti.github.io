@@ -1,0 +1,41 @@
+---
+layout: default
+---
+
+<article class="post">
+  <header class="post-header">
+    <p class="eyebrow">writeup{% if page.categories.size > 0 %} / {{ page.categories | join: " / " }}{% endif %}</p>
+    <h1>{{ page.title }}</h1>
+    <div class="post-meta">
+      <time datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: '%d %b %Y' }}</time>
+      {% if page.event %}
+        <span class="dot" aria-hidden="true">·</span>
+        {% assign event_doc = site.events | where: "slug", page.event | first %}
+        {% if event_doc %}
+          <a href="{{ event_doc.url | relative_url }}">{{ event_doc.title }}</a>
+        {% else %}
+          <span>{{ page.event }}</span>
+        {% endif %}
+      {% endif %}
+    </div>
+    {% include chips.html categories=page.categories tags=page.tags %}
+  </header>
+
+  <div class="post-grid{% unless site.appearance.toc %} post-grid--single{% endunless %}">
+    <div class="post-body prose">
+      {% if site.appearance.spoiler_blur %}
+        <p class="spoiler-notice">Flags and key steps are hidden behind spoilers. Click to reveal.</p>
+      {% endif %}
+
+      {{ content }}
+
+      <footer class="post-footer">
+        {% include pager.html %}
+      </footer>
+    </div>
+
+    {% if site.appearance.toc %}
+      {% include toc.html %}
+    {% endif %}
+  </div>
+</article>

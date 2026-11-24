@@ -1,0 +1,36 @@
+---
+layout: default
+title: Tags
+permalink: /tags/
+---
+
+<header class="page-header">
+  <p class="eyebrow">index / taxonomy</p>
+  <h1>Tags</h1>
+  <p class="page-lede">Techniques, tools and one-off labels.</p>
+</header>
+
+<div class="taxonomy-nav">
+  {% for tag in site.tags %}
+    <a href="#{{ tag[0] | slugify }}">#{{ tag[0] }}</a>
+  {% endfor %}
+</div>
+
+{% for tag in site.tags %}
+  <section class="taxonomy-section" id="{{ tag[0] | slugify }}">
+    <div class="taxonomy-section__head">
+      <span class="taxonomy-icon" aria-hidden="true">#</span>
+      <div><h2>{{ tag[0] }}</h2></div>
+      <span class="count">{{ tag[1].size }}</span>
+    </div>
+    <ul class="link-list">
+      {% for post in tag[1] %}
+        <li><a href="{{ post.url | relative_url }}">{{ post.title }}</a><time datetime="{{ post.date | date: '%Y-%m-%d' }}">{{ post.date | date: '%Y-%m-%d' }}</time></li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endfor %}
+
+{% if site.tags.size == 0 %}
+  <p class="empty">No tags yet. Add <code>tags: [something]</code> to a writeup's front matter.</p>
+{% endif %}

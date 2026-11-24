@@ -1,0 +1,39 @@
+---
+layout: default
+title: Events
+permalink: /events/
+---
+
+<header class="page-header">
+  <p class="eyebrow">archive / events</p>
+  <h1>Events</h1>
+  <p class="page-lede">Every CTF you have written up, newest first.</p>
+</header>
+
+{% assign sorted_events = site.events | sort: "date" | reverse %}
+{% assign current_year = "" %}
+
+{% for event in sorted_events %}
+  {% assign year = event.date | date: "%Y" %}
+  {% if year != current_year %}
+    {% unless current_year == "" %}</section>{% endunless %}
+    <section class="year-group" id="{{ year }}">
+    <h2 class="year-heading">{{ year }}</h2>
+    {% assign current_year = year %}
+  {% endif %}
+
+  {% assign challenge_count = site.posts | where: "event", event.slug | size %}
+  <a class="event-row" href="{{ event.url | relative_url }}">
+    <span class="event-row__date">{{ event.date | date: "%d %b" }}</span>
+    <span class="event-row__main">
+      <strong>{{ event.title }}</strong>
+      {% if event.description %}<small>{{ event.description | strip_html | truncate: 120 }}</small>{% endif %}
+    </span>
+    <span class="event-row__count">{{ challenge_count }} writeup{% unless challenge_count == 1 %}s{% endunless %} <span aria-hidden="true">-&gt;</span></span>
+  </a>
+{% endfor %}
+{% unless current_year == "" %}</section>{% endunless %}
+
+{% if sorted_events.size == 0 %}
+  <p class="empty">No events yet. Add a file to <code>_events/</code> to get started.</p>
+{% endif %}
