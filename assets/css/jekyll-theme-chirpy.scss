@@ -1,0 +1,127 @@
+---
+---
+
+@use 'abstracts/variables' with (
+  $theme: '{{ site.theme_mode }}'
+);
+
+/* prettier-ignore */
+@use 'main
+{%- if jekyll.environment == 'production' -%}
+  .bundle
+{%- endif -%}
+';
+
+/* ------------------------------------------------------------------
+   Reading-first layer.
+
+   Chirpy still owns navigation, search, taxonomy, TOC, math and syntax
+   highlighting. These rules only give the article a centred, typographic
+   column and take the "dashboard" edge off the chrome.
+   ------------------------------------------------------------------ */
+
+$reading-font: Charter, 'Bitstream Charter', 'Iowan Old Style', Georgia, serif;
+$reading-width: 44rem;
+
+html[data-bs-theme='light'] {
+  --sidebar-bg: #ffffff;
+  --sidebar-border-color: #ececec;
+  --main-border-color: #ececec;
+  --text-color: #262626;
+  --heading-color: #141414;
+  --link-color: #262626;
+  --search-tag-bg: #f2f2f2;
+}
+
+#sidebar {
+  border-right: 1px solid var(--sidebar-border-color);
+}
+
+@media (min-width: 1200px) {
+  #main-wrapper > .container > .row > main {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+}
+
+/* Post pages: one calm column, serif body text */
+article[data-toc] {
+  > header {
+    max-width: $reading-width;
+    margin: 0 auto 3rem;
+
+    h1 {
+      font-size: 2.6rem;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .post-desc {
+      font-size: 1.3rem;
+      color: var(--text-muted-color);
+    }
+  }
+
+  > .content {
+    max-width: $reading-width;
+    margin: 0 auto;
+    font-family: $reading-font;
+    font-size: 1.2rem;
+    line-height: 1.8;
+
+    h2,
+    h3,
+    h4 {
+      font-family: $reading-font;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+
+    p,
+    ul,
+    ol,
+    blockquote {
+      margin-bottom: 1.5rem;
+    }
+
+    img {
+      border-radius: 6px;
+    }
+
+    pre,
+    code,
+    kbd {
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    table {
+      font-size: 1rem;
+    }
+  }
+
+  .post-tail-wrapper {
+    max-width: $reading-width;
+    margin: 4rem auto 0;
+  }
+}
+
+/* Tags read as soft pills rather than form controls */
+.post-tag {
+  background: var(--search-tag-bg);
+  border: 0;
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  line-height: 1.2rem;
+  font-size: 0.85rem;
+  color: var(--text-muted-color);
+}
+
+/* Home feed: more air between entries, bigger headings */
+#post-list .card-wrapper:not(:last-child) {
+  margin-bottom: 2.25rem;
+}
+
+#post-list .card-title {
+  font-size: 1.5rem;
+}

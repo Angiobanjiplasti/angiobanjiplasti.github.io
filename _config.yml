@@ -52,8 +52,8 @@ analytics:
 pageviews:
   provider:
 
-# Dark by default; readers can still toggle in the sidebar.
-theme_mode: dark
+# Light by default; readers can still toggle in the sidebar.
+theme_mode: light
 
 cdn:
 avatar:
