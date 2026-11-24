@@ -1,128 +1,159 @@
-# -----------------------------------------------------------------------------
-# CTF Notes — site configuration
-# Copy this folder to GitHub as the root of your repository.
-# Before pushing: set `url`, `baseurl` and `author` below.
-# -----------------------------------------------------------------------------
+# Site settings — Chirpy theme (https://github.com/cotes2020/jekyll-theme-chirpy)
+theme: jekyll-theme-chirpy
+
+lang: en
+timezone:
 
 title: CTF Notes
-description: Writeups, notes and dead ends from CTFs and security practice.
-lang: en
+tagline: Writeups, notes and dead ends
+description: >-
+  Personal CTF writeups and security notes.
 
-# User site repo with a custom domain (CNAME: angio.bezv.uk).
-# baseurl stays empty because the site is served from the domain root.
 url: "https://angio.bezv.uk"
 baseurl: ""
 
-author:
+github:
+  username: Angiobanjiplasti
+
+twitter:
+  username:
+
+social:
   name: Angiobanjiplasti
-  github: Angiobanjiplasti
-  email: ""
+  email:
+  fediverse_handle:
+  links:
+    - https://github.com/Angiobanjiplasti
 
-# -----------------------------------------------------------------------------
-# Build settings (GitHub Pages compatible)
-# -----------------------------------------------------------------------------
-markdown: kramdown
-highlighter: rouge
-kramdown:
-  input: GFM
-  # KaTeX is loaded in the browser; kramdown emits \(...\) and \[...\] which
-  # the auto-renderer picks up. See _includes/math.html.
-  math_engine: mathjax
-  smart_quotes: ["apos", "apos", "quot", "quot"]
-  syntax_highlighter_opts:
-    block:
-      line_numbers: false
+webmaster_verifications:
+  google:
+  bing:
+  alexa:
+  yandex:
+  baidu:
+  facebook:
 
-plugins:
-  - jekyll-feed
-  - jekyll-seo-tag
-  - jekyll-sitemap
-  - jekyll-paginate
+analytics:
+  google:
+    id:
+  goatcounter:
+    id:
+  umami:
+    id:
+    domain:
+  matomo:
+    id:
+    domain:
+  cloudflare:
+    id:
+  fathom:
+    id:
+
+pageviews:
+  provider:
+
+# Dark by default; readers can still toggle in the sidebar.
+theme_mode: dark
+
+cdn:
+avatar:
+social_preview_image:
+
+toc: true
+
+actions:
+  edit_post:
+    enabled: false
+    url: ""
+    static_url: false
+
+comments:
+  provider:
+
+assets:
+  self_host:
+    enabled:
+
+pwa:
+  enabled: true
+  cache:
+    enabled: true
+    deny_paths:
 
 paginate: 10
-permalink: /writeups/:year/:month/:day/:title/
+
+kramdown:
+  footnote_backlink: "&#8617;&#xfe0e;"
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: highlight
+    span:
+      line_numbers: false
+    block:
+      line_numbers: true
+      start_line: 1
 
 collections:
+  tabs:
+    output: true
+    sort_by: order
   events:
     output: true
-    permalink: /events/:name/
+    permalink: /events/:title/
 
 defaults:
-  - scope:
-      path: ""
-    values:
-      layout: default
   - scope:
       path: ""
       type: posts
     values:
       layout: post
+      comments: false
+      toc: true
+      permalink: /posts/:title/
+  - scope:
+      path: _drafts
+    values:
+      comments: false
+  - scope:
+      path: ""
+      type: tabs
+    values:
+      layout: page
+      permalink: /:title/
   - scope:
       path: ""
       type: events
     values:
       layout: event
 
+sass:
+  style: compressed
+
+compress_html:
+  clippings: all
+  comments: all
+  endings: all
+  profile: false
+  blanklines: false
+  ignore:
+    envs: [development]
+
 exclude:
-  - Gemfile
-  - Gemfile.lock
+  - "*.gem"
+  - "*.gemspec"
+  - docs
+  - tools
   - README.md
-  - vendor
-  - .bundle
-  - .gitignore
+  - LICENSE
+  - purgecss.js
+  - "*.config.js"
+  - "package*.json"
 
-# -----------------------------------------------------------------------------
-# Theme options
-# -----------------------------------------------------------------------------
-appearance:
-  toc: true
-  search: true
-  code_copy: true
-  spoiler_blur: true
-  # Accent colour: "mint" or "amber". Change the CSS variables in
-  # _sass/_base.scss if you want a different palette.
-  accent: mint
-
-katex_version: "0.16.11"
-
-nav:
-  - title: Writeups
-    url: /
-  - title: Events
-    url: /events/
-  - title: Categories
-    url: /categories/
-  - title: Tags
-    url: /tags/
-  - title: Search
-    url: /search/
-  - title: About
-    url: /about/
-
-# Display metadata for challenge categories. Jekyll owns `site.categories`,
-# so this deliberately uses a different key.
-category_meta:
-  web:
-    label: Web
-    icon: "<>"
-    description: Injection, auth bugs, client-side tricks
-  crypto:
-    label: Crypto
-    icon: "sum"
-    description: Ciphers, maths, keys and signatures
-  pwn:
-    label: Pwn
-    icon: "$_"
-    description: Memory corruption and exploitation
-  reverse:
-    label: Reverse
-    icon: "0x"
-    description: Binaries, bytecode and decompilation
-  forensics:
-    label: Forensics
-    icon: "??"
-    description: Packets, disks, images and logs
-  misc:
-    label: Misc
-    icon: "~~"
-    description: Everything else
+jekyll-archives:
+  enabled: [categories, tags]
+  layouts:
+    category: category
+    tag: tag
+  permalinks:
+    tag: /tags/:name/
+    category: /categories/:name/

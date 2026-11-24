@@ -1,31 +1,29 @@
 ---
-layout: default
+layout: page
 ---
 
-<article class="event">
-  <header class="page-header event-header">
-    <p class="eyebrow">event / {{ page.date | date: "%Y" }}</p>
-    <h1>{{ page.title }}</h1>
-    <div class="event-header__meta">
-      <time datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: '%d %b %Y' }}</time>
-      {% if page.event_url %}<a href="{{ page.event_url }}" rel="noopener noreferrer">event site <span aria-hidden="true">↗</span></a>{% endif %}
-      {% if page.ctftime_url %}<a href="{{ page.ctftime_url }}" rel="noopener noreferrer">CTFtime <span aria-hidden="true">↗</span></a>{% endif %}
-    </div>
-    {% if page.description %}<p class="page-lede">{{ page.description | strip_html }}</p>{% endif %}
-    {% if page.result %}<p class="event-result"><span>result</span> {{ page.result }}</p>{% endif %}
-  </header>
+<div class="content">
+  <h1>{{ page.title }}</h1>
+
+  <p>
+    <time datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: '%d %b %Y' }}</time>
+    {% if page.event_url %} · <a href="{{ page.event_url }}" rel="noopener noreferrer">event site</a>{% endif %}
+    {% if page.ctftime_url %} · <a href="{{ page.ctftime_url }}" rel="noopener noreferrer">CTFtime</a>{% endif %}
+  </p>
+
+  {% if page.description %}<p>{{ page.description }}</p>{% endif %}
+  {% if page.result %}<p><strong>Result:</strong> {{ page.result }}</p>{% endif %}
 
   {% assign challenges = site.posts | where: "event", page.slug %}
-  <div class="section-heading">
-    <h2>Challenges <span class="count">{{ challenges.size }}</span></h2>
-    <a href="{{ '/events/' | relative_url }}">&larr; All events</a>
-  </div>
 
-  <div class="post-list">
-    {% for post in challenges %}
-      {% include post-card.html post=post %}
-    {% else %}
-      <p class="empty">No writeups attached to this event yet. Set <code>event: {{ page.slug }}</code> in a post's front matter.</p>
-    {% endfor %}
-  </div>
-</article>
+  <h2>Writeups</h2>
+  {% if challenges.size > 0 %}
+    <ul>
+      {% for post in challenges %}
+        <li><a href="{{ post.url | relative_url }}">{{ post.title }}</a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No writeups attached to this event yet.</p>
+  {% endif %}
+</div>

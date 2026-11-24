@@ -1,5 +1,0 @@
-{% assign spoiler_label = include.label | default: 'spoiler' %}
-<span class="spoiler-inline" data-spoiler tabindex="0" role="button" aria-expanded="false" aria-label="Reveal {{ spoiler_label }}">
-  <span class="spoiler-inline__mask" aria-hidden="true">{{ spoiler_label }}</span>
-  <span class="spoiler-inline__text">{{ include.content }}</span>
-</span>
