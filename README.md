@@ -1,41 +1,52 @@
 # CTF Notes
 
 Built on [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy) (MIT).
-All layout, styling, search, TOC, taxonomy and math come from the upstream
-theme — there is no custom CSS or hand-rolled theme code here.
+Layout, styling, search, TOC, taxonomy and math come from the upstream theme.
 
-There are deliberately **no example writeups**. `_posts/` is empty.
+## Publish a writeup
 
-## Add a writeup
+Start from `_templates/writeup.md` — copy it anywhere you like (your Obsidian
+vault, `/tmp`, wherever). Write in ordinary Markdown, then run:
 
-Create `_posts/YYYY-MM-DD-name.md`:
-
-```yaml
----
-title: "Challenge name"
-date: 2026-11-24
-categories: [web]
-tags: [jwt]
-event: event-slug        # optional, matches a file in _events/
-toc: true
----
+```bash
+cd ~/Documents
+bin/publish path/to/note.md
 ```
 
-Then write the post below the front matter. Chirpy supports code highlighting,
-MathJax math (`$$...$$`), spoilers via `<details>`, and more — see the
-[Chirpy writing guide](https://chirpy.cotes.page/posts/write-a-new-post/).
+The script normalises front matter, converts Obsidian syntax and creates
+`_posts/YYYY-MM-DD-slug.md`, then commits and pushes it. It accepts any `.md`,
+with or without front matter.
+
+| Obsidian syntax | Published as |
+| --- | --- |
+| `![[shot.png]]` | `![shot](/assets/img/inbox/shot.png)` |
+| `[[Target]]` / `[[Target\|Label]]` | link to `/posts/target/` |
+| `> [!tip] ...` | Chirpy `.prompt-tip` block |
+
+Put screenshots in `assets/img/inbox/`. The script warns about any it can't find.
+
+Useful flags:
+
+```bash
+bin/publish note.md --dry-run              # print the result, write nothing
+bin/publish note.md --no-commit            # write the post, skip git
+bin/publish note.md --no-push              # commit locally, don't push
+bin/publish note.md --slug my-slug -d 2026-11-25
+bin/publish note.md --force                # overwrite an existing post
+```
+
+The permalink comes from the slug: `/posts/my-slug/`.
 
 ## Add an event
 
 Create `_events/slug.md` with `title`, `date`, optional `event_url`,
-`ctftime_url`, `description` and `result`. Writeups with `event: slug` are
-listed automatically on that event's page and in the Events tab.
+`ctftime_url`, `description` and `result`. Posts with `event: slug` in their
+front matter are listed automatically on that event page and in the Events tab.
 
 ## Deploy
 
-Pushes to `main` trigger `.github/workflows/pages-deploy.yml`, which builds with
-Bundler and deploys to GitHub Pages. `CNAME` keeps the custom domain
-`angio.bezv.uk`; `url` in `_config.yml` matches it.
+Pushes to `main` trigger `.github/workflows/pages-deploy.yml`. `CNAME` keeps the
+custom domain `angio.bezv.uk`; `url` in `_config.yml` matches it.
 
 Local preview:
 
@@ -43,3 +54,9 @@ Local preview:
 bundle install
 bundle exec jekyll serve
 ```
+
+## Styling
+
+`assets/css/jekyll-theme-chirpy.scss` is Chirpy's supported override file. It
+adds a light, reading-first layer (serif article column, softer chrome) on top
+of the untouched theme. Prefer changing that file over editing theme internals.

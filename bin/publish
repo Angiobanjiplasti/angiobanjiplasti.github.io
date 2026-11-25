@@ -1,0 +1,259 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Publish a Markdown file as a CTF writeup.
+#
+#   bin/publish ~/Notes/writeups/broken-jwt.md
+#   bin/publish note.md --slug broken-jwt --date 2026-11-25
+#   bin/publish note.md --dry-run          # print only, write nothing
+#   bin/publish note.md --no-commit        # write the post, skip git
+#   bin/publish note.md --no-push          # commit locally, don't push
+#
+# Screenshots go in assets/img/inbox/ and are referenced as ![[shot.png]].
+
+require 'yaml'
+require 'date'
+require 'fileutils'
+require 'optparse'
+require 'uri'
+
+ROOT = File.expand_path('..', __dir__)
+POSTS_DIR = File.join(ROOT, '_posts')
+IMAGE_DIR_REL = 'assets/img/inbox'
+IMAGE_URL = "/#{IMAGE_DIR_REL}"
+IMAGE_EXT = %w[png jpg jpeg gif svg webp avif bmp].freeze
+FRONT_MATTER = /\A---\s*\n(.*?)\n---\s*(?:\n|\z)/m
+
+options = { slug: nil, date: nil, force: false, no_push: false,
+            no_commit: false, dry_run: false }
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: bin/publish FILE [options]"
+
+  opts.on('-s', '--slug SLUG', 'Override the URL slug') { |v| options[:slug] = v }
+  opts.on('-d', '--date DATE', 'Override the date (YYYY-MM-DD)') { |v| options[:date] = v }
+  opts.on('-f', '--force', 'Replace an existing post with the same name') { options[:force] = true }
+  opts.on('-n', '--no-push', 'Commit locally but do not push') { options[:no_push] = true }
+  opts.on('--no-commit', 'Write the post but skip git entirely') { options[:no_commit] = true }
+  opts.on('--dry-run', 'Print the result without writing anything') { options[:dry_run] = true }
+  opts.on('-h', '--help', 'Show this help') { puts opts; exit }
+end.parse!
+
+source = ARGV.first
+abort 'Usage: bin/publish FILE [options] (try --help)' unless source
+source = File.expand_path(source)
+abort "No such file: #{source}" unless File.file?(source)
+abort 'Expected a Markdown file (.md or .markdown)' unless source.match?(/\.(?:md|markdown)\z/i)
+
+raw = File.read(source, encoding: 'UTF-8')
+match = raw.match(FRONT_MATTER)
+
+if match
+  yaml_text = match[1]
+  body = match.post_match
+  begin
+    front = YAML.safe_load(yaml_text, permitted_classes: [Date, Time], aliases: true) || {}
+  rescue Psych::Exception
+    # Obsidian sometimes writes tags as [#tag], which YAML reads as a comment.
+    cleaned = yaml_text.gsub(/^(\s*-\s*)#(\w)/, '\1\2')
+                       .gsub(/(\[\s*)#(\w)/, '\1\2')
+                       .gsub(/(\,\s*)#(\w)/, '\1\2')
+    begin
+      front = YAML.safe_load(cleaned, permitted_classes: [Date, Time], aliases: true) || {}
+    rescue Psych::Exception => e
+      abort "Could not parse the YAML front matter: #{e.message}"
+    end
+  end
+  abort 'Front matter must be a YAML mapping' unless front.is_a?(Hash)
+else
+  front = {}
+  body = raw
+end
+
+front = front.transform_keys(&:to_s)
+
+def slugify(value)
+  value.to_s.downcase.gsub(/[^a-z0-9]+/, '-').gsub(/\A-+|-+\z/, '').squeeze('-')
+end
+
+def clean_list(value)
+  items = value.is_a?(Array) ? value : value.to_s.split(',')
+  items.map { |item| item.to_s.strip.sub(/\A#+/, '') }
+        .reject(&:empty?)
+end
+
+def first_paragraph(text)
+  in_code = false
+  text.each_line do |line|
+    line = line.chomp
+    in_code = !in_code if line.start_with?('```')
+    next if in_code || line.strip.empty?
+    next if line.start_with?('#', '>', '|', '---', ':::', '![')
+
+    paragraph = +line
+    text.each_line.drop_while { |l| l != "#{line}\n" }.drop(1).each do |following|
+      break if following.strip.empty? || following.start_with?('#', '```')
+
+      paragraph << ' ' << following.strip
+    end
+    clean = paragraph.gsub(/!?\[([^\]]*)\]\([^)]*\)/, '\1')
+                     .gsub(/[*_`~]/, '').strip
+    return clean unless clean.empty?
+  end
+  ''
+end
+
+def truncate(text, length = 160)
+  return text if text.length <= length
+
+  text[0...length].sub(/\s+\S*\z/, '') + '…'
+end
+
+# --- Body conversions -------------------------------------------------------
+
+body = body.gsub(/%%.*?%%/m, '')
+
+# Obsidian callouts -> Chirpy prompts.
+body = body.gsub(/^[ \t]*>\s*\[!([A-Za-z-]+)\]([^\n]*)\n((?:^[ \t]*>.*\n?)*)/i) do
+  raw_kind = Regexp.last_match(1)
+  raw_title = Regexp.last_match(2)
+  raw_lines = Regexp.last_match(3)
+  kind = raw_kind.downcase.sub(/-+\z/, '')
+  lines = raw_lines.lines.map { |line| line.sub(/^[ \t]*>[ \t]?/, '').chomp }
+  lines = lines.reject(&:empty?)
+  title_line = raw_title.strip.sub(/\A-\s*/, '')
+  lines.unshift("**#{title_line}**") unless title_line.empty?
+  prompt = case kind
+           when 'tip', 'hint', 'important' then 'tip'
+           when 'warning', 'caution', 'attention' then 'warning'
+           when 'danger', 'error', 'bug', 'failure', 'fail' then 'danger'
+           else 'info'
+           end
+  "> #{lines.join("\n> ")}\n{: .prompt-#{prompt} }\n"
+end
+
+missing_images = []
+
+# Embedded attachments: ![[shot.png]] -> Markdown image.
+body = body.gsub(/!\[\[([^\]]+)\]\]/) do
+  parts = Regexp.last_match(1).split('|').map(&:strip)
+  path = parts.shift.to_s
+  alias_text = parts.reject { |part| part.match?(/\A\d+(?:x\d*)?\z/) }.first
+  name = File.basename(path)
+  if IMAGE_EXT.include?(File.extname(name).downcase.delete('.'))
+    unless File.file?(File.join(ROOT, IMAGE_DIR_REL, name))
+      missing_images << name
+    end
+    alt = alias_text || File.basename(name, File.extname(name)).tr('-_', ' ')
+    "![#{alt}](#{IMAGE_URL}/#{URI.encode_www_form_component(name)})"
+  else
+    "#{alias_text || name}: /posts/#{slugify(File.basename(path, File.extname(path)))}/"
+  end
+end
+
+# Wiki links: [[Target|Label]] and [[Target#Heading]] -> links to posts.
+body = body.gsub(/(?<!!)\[\[([^\]]+)\]\]/) do
+  raw_link = Regexp.last_match(1)
+  path, label = raw_link.split('|', 2)
+  path, anchor = path.split('#', 2)
+  slug = slugify(File.basename(path, File.extname(path)))
+  text = label || path.tr('-_', ' ')
+  url = "/posts/#{slug}/"
+  url += "##{slugify(anchor)}" if anchor && !anchor.empty?
+  "[#{text}](#{url})"
+end
+
+body = body.strip << "\n"
+
+# --- Front matter -----------------------------------------------------------
+
+filename = File.basename(source, File.extname(source))
+date_from_name = filename[/\A(\d{4}-\d{2}-\d{2})/, 1]
+date_value = options[:date] || front['date'] || date_from_name || Date.today.to_s
+date = date_value.is_a?(Date) || date_value.is_a?(Time) ? date_value.strftime('%Y-%m-%d') : date_value.to_s
+
+title = options[:slug] && front['title'].nil? ? nil : front['title']
+title ||= body[/^#\s+(.+)$/, 1]&.sub(/\s+#+\s*\z/, '')&.strip
+title ||= filename.sub(/\A\d{4}-\d{2}-\d{2}-/, '').tr('-_', ' ').capitalize
+
+slug = slugify(options[:slug] || front['slug'] || title)
+slug = slugify(filename.sub(/\A\d{4}-\d{2}-\d{2}-/, '')) if slug.empty?
+
+categories = clean_list(front['categories']).first(2)
+categories = ['misc'] if categories.empty?
+tags = clean_list(front['tags']).map(&:downcase).uniq
+
+description = front['description'] || truncate(first_paragraph(body))
+description = description.to_s.gsub(/\s+/, ' ').strip
+
+math = front.key?('math') ? front['math'] : body.match?(/\$\$|\$[^$\n]+\$/)
+toc = front.key?('toc') ? front['toc'] : true
+
+result = front.merge(
+  'title' => title,
+  'date' => date,
+  'description' => description,
+  'categories' => categories,
+  'tags' => tags,
+  'toc' => toc,
+  'math' => math
+)
+result.delete('slug')
+result['layout'] = 'post'
+
+def scalar(value)
+  case value
+  when true, false, Integer, Float
+    value.to_s
+  when String
+    needs_quotes = value.empty? || value != value.strip ||
+                   value.match?(/[:#\[\]{}&*?|<>=!%@`",\n]/) ||
+                   value.match?(/\A(?:yes|no|true|false|null|~|\d+)\z/i)
+    needs_quotes ? value.inspect : value
+  else
+    value.to_s.inspect
+  end
+end
+
+yaml_lines = result.map do |key, value|
+  rendered = case value
+             when Array then "[#{value.map { |item| scalar(item) }.join(', ')}]"
+             else scalar(value)
+             end
+  "#{key}: #{rendered}"
+end
+
+output = "---\n#{yaml_lines.join("\n")}\n---\n\n#{body}"
+
+if options[:dry_run]
+  puts output
+  puts "\n# Would write: _posts/#{date}-#{slug}.md"
+  missing_images.each { |name| warn "# Missing image: #{IMAGE_DIR_REL}/#{name}" }
+  exit
+end
+
+target = File.join(POSTS_DIR, "#{date}-#{slug}.md")
+abort "Already exists (use --force): #{target}" if File.exist?(target) && !options[:force]
+
+FileUtils.mkdir_p(POSTS_DIR)
+File.write(target, output, encoding: 'UTF-8')
+
+puts "Wrote _posts/#{File.basename(target)}"
+puts "URL: /posts/#{slug}/"
+missing_images.each { |name| warn "Missing image: #{IMAGE_DIR_REL}/#{name}" }
+
+if options[:no_commit]
+  puts 'Skipped git (--no-commit).'
+  exit
+end
+
+Dir.chdir(ROOT) do
+  system('git', 'add', '--', target, IMAGE_DIR_REL) || abort('git add failed')
+  system('git', 'commit', '-m', "Add writeup: #{title}") || abort('git commit failed')
+  if options[:no_push]
+    puts 'Committed locally. Run `git push` when ready.'
+  else
+    system('git', 'push', 'origin', 'main') || abort('git push failed')
+    puts "Live: https://angio.bezv.uk/posts/#{slug}/"
+  end
+end
