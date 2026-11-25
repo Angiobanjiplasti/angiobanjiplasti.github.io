@@ -33,6 +33,17 @@ html[data-bs-theme='light'] {
   --search-tag-bg: #f2f2f2;
 }
 
+html[data-bs-theme='dark'] {
+  --main-bg: #151517;
+  --sidebar-bg: #171719;
+  --sidebar-border-color: #2a2a2d;
+  --main-border-color: #2a2a2d;
+  --text-color: #d6d6d8;
+  --heading-color: #f2f2f3;
+  --link-color: #a9c7ef;
+  --search-tag-bg: #26262a;
+}
+
 #sidebar {
   border-right: 1px solid var(--sidebar-border-color);
 }
