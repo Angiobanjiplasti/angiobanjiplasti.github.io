@@ -17,6 +17,6 @@ order: 5
       {% endfor %}
     </ul>
   {% else %}
-    <p>No events yet. Add a file to <code>_events/</code> when you have one.</p>
+    <p>No events yet.</p>
   {% endif %}
 </div>
