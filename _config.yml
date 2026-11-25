@@ -54,7 +54,7 @@ pageviews:
 
 # Dark by default. Set to `light` for light, or leave empty for the
 # light/dark/system switcher in the sidebar.
-theme_mode: dark
+theme_mode:
 
 cdn:
 avatar:
