@@ -1,0 +1,4 @@
+<p class="ctf-author text-muted">
+  <strong>CTF author:</strong>
+  {% if page.ctf_author_url and page.ctf_author_url != empty %}<a href="{{ page.ctf_author_url }}">{{ page.ctf_author }}</a>{% else %}{{ page.ctf_author }}{% endif %}
+</p>

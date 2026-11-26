@@ -3,6 +3,8 @@ title: "Challenge name — one-line description"
 date: 2026-11-25
 categories: [web]          # up to two, e.g. [web, crypto]
 tags: [jwt, auth]          # lowercase; a leading # is fine too
+ctf_author:                # original CTF/machine author, separate from your byline
+ctf_author_url:            # optional profile link, e.g. https://app.hackthebox.com/users/...
 # event: hackthebox-backdoor  # optional, matches _events/<slug>.md
 # description: "Summary for the home page and search. Otherwise the first paragraph is used."
 # math: true               # uncomment only if the writeup uses $...$ or $$...$$

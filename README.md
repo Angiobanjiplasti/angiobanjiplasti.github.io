@@ -17,6 +17,10 @@ The script normalises front matter, converts Obsidian syntax and creates
 `_posts/YYYY-MM-DD-slug.md`, then commits and pushes it. It accepts any `.md`,
 with or without front matter.
 
+Set `ctf_author` in the front matter to credit the original CTF/machine author
+(and `ctf_author_url` for a profile link). It renders as its own line below the
+"By …" byline, which stays reserved for the writeup author.
+
 | Obsidian syntax | Published as |
 | --- | --- |
 | `![[shot.png]]` | `![shot](/assets/img/inbox/shot.png)` |
