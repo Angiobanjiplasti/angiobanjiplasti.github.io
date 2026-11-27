@@ -48,6 +48,11 @@ html[data-bs-theme='dark'] {
   border-right: 1px solid var(--sidebar-border-color);
 }
 
+#sidebar .site-title {
+  font-size: 1.70rem;
+  line-height: 1.2;
+}
+
 /* No avatar circle: the site title leads the sidebar instead. */
 #sidebar #avatar {
   display: none;
