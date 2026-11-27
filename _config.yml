@@ -4,8 +4,8 @@ theme: jekyll-theme-chirpy
 lang: en
 timezone:
 
-title: CTF Notes
-tagline: Writeups, notes and dead ends
+title:
+tagline: Writeups, writedowns and dead ends
 description: >-
   Personal CTF writeups and security notes.
 
