@@ -3,8 +3,7 @@ title: DoubleTake
 date: 2026-11-25
 categories: [Machine]
 tags: [easy, linux, sshole, docker]
-ctf_author: TheCyberGeek
-ctf_author_url: https://app.hackthebox.com/users/114053
+Author: "[TheCyberGeek](https://app.hackthebox.com/users/114053)"
 description: DoubleTake is an easy-difficulty Linux machine running an AI agent platform behind a Docker container. Port 22 serves SSH from an Alpine container with OpenSSH…
 toc: true
 math: false
@@ -60,12 +59,12 @@ where we find the B64 encoded user and pass:
 user: bob
 pass: CorrectHorseBatteryStaple
 ```
-There IS a user bob on the system, which means just ssh out and back in as bob with the given password. This works, now we can read `users.txt` in the bob home directory containing "f9e89987ee927c00c18a99a89f691045". And this is our first 32 bit hex user flag.
+There IS a user bob on the system, which means just ssh out and back in as bob with the given password. This works, now we can read `users.txt` in the bob home directory containing "f9e89987ee927c00c18a99a89f691045". And this is out first 32 bit hex user flag.
 
 Next is the Docker part. We have to upload a file through http://[ip]/deploy that is named `xz` so that it overwrites the `xz` binary. Through the deploy, `xz` actually runs as root so we can open a remote shell. Looking up the CVE for Docker, we can find a PoC from [berdav](https://github.com/berdav) on [github](https://github.com/berdav/CVE-2026-41567/blob/main/test.sh) so we apply the exploit script here as well. We only need to make a few adjustments according to the specific container:
 1. With `mount` we check what `sda` partition we are on. In this case, it is `/dev/sda4`;
 2. The container doesn't have `ncat`, but it does have `nc`, specifically the `busybox` version. We need to place the `-e` flag at the end.
-3. We need to replace the IP with our own IP so the `nc` listener actually works, we also use         `nc -vnlp 50005` to listen for the remote shell.
+3. We need to replace the IP with our own IP so the `nc` listener actually words, we also use         `nc -vnlp 50005` to listen for the remote shell.
 I used `tar -cJvf shell.tar.xz xz` for compressing the exploit to send it off, once its on the machine we can make changes to it using vi anyways so its not terrible if you make a mistake.
 
 This is the final script:
