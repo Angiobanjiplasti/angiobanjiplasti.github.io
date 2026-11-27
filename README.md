@@ -41,6 +41,10 @@ bin/publish note.md --force                # overwrite an existing post
 
 The permalink comes from the slug: `/posts/my-slug/`.
 
+Set `unlisted: true` in the front matter to publish a post that is reachable
+by its direct URL but omitted from the homepage, archives, taxonomies, search,
+feed and sitemap. It also gets a `noindex` robots tag.
+
 ## Add an event
 
 Create `_events/slug.md` with `title`, `date`, optional `event_url`,
